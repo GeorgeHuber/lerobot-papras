@@ -13,9 +13,11 @@ import os
 from PIL import Image
 from mujoco_env.papras7dof_env import PaprasEnv
 
-import sys
-sys.path.append('/home/student/Desktop/')
+# import sys
+sys.path.append('/home/student/Desktop/lerobot-papras')
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
+# print(lerobot.__file__)
+# exit(0)
 import pdb
 
 from PAPRLE.configs import BaseConfig
@@ -32,9 +34,9 @@ import argparse
 SEED = 0 
 # SEED = None <- Uncomment this line to randomize the object positions
 
-REPO_NAME = 'papras7dof_pnp'
-NUM_DEMO = 1 # Number of demonstrations to collect
-ROOT = "./papras7dof_demo" # The root directory to save the demonstrations
+REPO_NAME = 'test'
+NUM_DEMO = 0 # Number of demonstrations to collect
+ROOT = "/home/student/Desktop/lerobot-papras/test" # The root directory to save the demonstrations
 
 TASK_NAME = 'Put mug cup on the plate' 
 xml_path = './asset/papras_scene.xml'
@@ -107,7 +109,7 @@ parser.add_argument('--save_dir', type=str, default='demo_data', help='Directory
 
 robot_config, leader_config, env_config = BaseConfig().parse(parser)
 args, _ = parser.parse_known_args()
-SAVE_DIR_BASE = args.save_dir
+# SAVE_DIR_BASE = args.save_dir
 
 
 
@@ -163,7 +165,6 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
         done = PnPEnv.check_success()
         if done: 
             # Save the episode data and reset the environment
-            
             reset = False
             # init_env_qpos = env.reset()
             # save_dir = make_episode(robot_config, leader_config, self.env_config, folder_name=SAVE_DIR_BASE)
@@ -184,9 +185,11 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
                 # if TIME_DEBUG: log_time('Reset Time')
                 leader.require_end = False
                 PnPEnv.reset(seed = SEED)
-
+            
             dataset.save_episode()
             episode_id += 1
+            if episode_id == NUM_DEMO:
+                break
             
         # Teleoperate the robot and get delta end-effector pose with 
         
@@ -245,5 +248,7 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
             )
         PnPEnv.render(teleop=True)
         
-
+dataset.clear_episode_buffer()
+teleop.close()
 PnPEnv.env.close_viewer()
+exit(0)
