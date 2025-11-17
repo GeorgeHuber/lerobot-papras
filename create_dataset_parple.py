@@ -34,9 +34,9 @@ import argparse
 SEED = 0 
 # SEED = None <- Uncomment this line to randomize the object positions
 
-REPO_NAME = 'test'
-NUM_DEMO = 0 # Number of demonstrations to collect
-ROOT = "/home/student/Desktop/lerobot-papras/test" # The root directory to save the demonstrations
+REPO_NAME = 'nov_17'
+NUM_DEMO = 2 # Number of demonstrations to collect
+ROOT = "/home/student/Desktop/lerobot-papras/nov_17" # The root directory to save the demonstrations
 
 TASK_NAME = 'Put mug cup on the plate' 
 xml_path = './asset/papras_scene.xml'
@@ -247,8 +247,14 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
                 }
             )
         PnPEnv.render(teleop=True)
-        
+
 dataset.clear_episode_buffer()
+dataset.stop_image_writer()
+dataset.finalize()
+print("Saved Dataset")
 teleop.close()
+leader.close()
+print("Exited teleop/leader sucessfully")
 PnPEnv.env.close_viewer()
-exit(0)
+print("Closed Viewer sucessfully")
+sys.exit()
