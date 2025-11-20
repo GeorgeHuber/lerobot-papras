@@ -29,6 +29,7 @@ class PaprasEnv:
         self.action_type = action_type
         self.state_type = state_type
         self.q_init = q_init
+        self.mug_in_transit = False
         if self.q_init is None:
             # self.q_init = self.env.get_qpos_joints(joint_names=self.joint_names)
             self.q_init   = np.array([ 1.51811272e-03, -1.03167055e+00, -3.26837696e-04,  4.69888307e-01,
@@ -118,6 +119,8 @@ class PaprasEnv:
         print("DONE INITIALIZATION")
         self.gripper_state = False
         self.past_chars = []
+
+        self.mug_in_transit = False
 
     def step(self, action):
         '''
@@ -309,6 +312,23 @@ class PaprasEnv:
         gripper = self.env.get_qpos_joint('robot1/gripper')
         gripper_cmd = 1.0 if gripper[0] > 0.5 else 0.0
         return np.concatenate([delta, [gripper_cmd]],dtype=np.float32)
+    def check_failure(self):
+        '''
+        Check if mug is dropped
+        '''
+        p_mug = self.env.get_p_body('body_obj_mug_5')
+        # print("Mug pos: ", p_mug)
+        p_gripper = self.env.get_p_body('robot1/end_effector_link')
+        p_plate = self.env.get_p_body('body_obj_plate_11')
+        on_plate = np.linalg.norm(p_mug[:2] - p_plate[:2]) < 0.1 and np.linalg.norm(p_mug[2] - p_plate[2]) < 0.6
+        if self.mug_in_transit:
+            if p_mug[2] < 0.9 and not on_plate:
+                return True
+        if not self.mug_in_transit and p_mug[2] > 1.1 and np.linalg.norm(p_mug - p_gripper) < 0.05:
+            print("In transit")
+            # breakpoint()
+            self.mug_in_transit = True
+        return False
 
     def check_success(self):
         '''

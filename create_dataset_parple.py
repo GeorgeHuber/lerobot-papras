@@ -31,12 +31,12 @@ import argparse
 
 # If you want to randomize the object positions, set this to None
 # If you fix the seed, the object positions will be the same every time
-SEED = 0 
+SEED = None
 # SEED = None <- Uncomment this line to randomize the object positions
 
-REPO_NAME = 'nov_17'
-NUM_DEMO = 2 # Number of demonstrations to collect
-ROOT = "/home/student/Desktop/lerobot-papras/nov_17" # The root directory to save the demonstrations
+REPO_NAME = 'nov_19_e20_v2'
+NUM_DEMO = 20 # Number of demonstrations to collect
+ROOT = "/home/student/Desktop/lerobot-papras/"+REPO_NAME # The root directory to save the demonstrations
 
 TASK_NAME = 'Put mug cup on the plate' 
 xml_path = './asset/papras_scene.xml'
@@ -162,13 +162,14 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
     PnPEnv.step_env()
     if PnPEnv.env.loop_every(HZ=20):
         # check if the episode is done
-        done = PnPEnv.check_success()
+        success = PnPEnv.check_success()
+        failure = PnPEnv.check_failure()
+        done = success or failure
         if done: 
             # Save the episode data and reset the environment
-            reset = False
             # init_env_qpos = env.reset()
             # save_dir = make_episode(robot_config, leader_config, self.env_config, folder_name=SAVE_DIR_BASE)
-            if episode_id < NUM_DEMO - 1:
+            if failure or episode_id < NUM_DEMO - 1:
                 teleop.reset(init_env_qpos)
                 shutdown = leader.launch_init(init_env_qpos)  # Wait in the initialize function until the leader is ready (for visionpro and gello)
                 if shutdown: exit(0)
@@ -185,9 +186,10 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
                 # if TIME_DEBUG: log_time('Reset Time')
                 leader.require_end = False
                 PnPEnv.reset(seed = SEED)
-            
-            dataset.save_episode()
-            episode_id += 1
+            record_flag = False
+            if not failure:
+                dataset.save_episode()
+                episode_id += 1
             if episode_id == NUM_DEMO:
                 break
             
@@ -199,10 +201,6 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
         # 1. Get command from leader
         command = leader.get_status()
         step_dict['command'] = command
-        # print(command)
-        # breakpoint()
-        # print(initial_qpos)
-        # input("press enter again again")
         
         #@TODO: harmonize resets
         action, reset  = PnPEnv.teleop_robot() #pos, rot, gripper_bool
@@ -219,6 +217,7 @@ while PnPEnv.env.is_viewer_alive() and episode_id < NUM_DEMO:
             # Reset the environment and clear the episode buffer
             # This can be done by pressing 'z' key
             PnPEnv.reset(seed=SEED)
+            
             # PnPEnv.reset()
             dataset.clear_episode_buffer()
             record_flag = False
