@@ -34,7 +34,7 @@ import argparse
 SEED = None
 # SEED = None <- Uncomment this line to randomize the object positions
 
-REPO_NAME = 'nov_19_e20_v2'
+REPO_NAME = 'dec_8_e60_v4'
 NUM_DEMO = 20 # Number of demonstrations to collect
 ROOT = "/home/student/Desktop/lerobot-papras/"+REPO_NAME # The root directory to save the demonstrations
 
