@@ -105,7 +105,7 @@ class PaprasEnv:
         )
         for obj_idx in range(n_obj):
             self.env.set_p_base_body(body_name=obj_names[obj_idx],p=obj_xyzs[obj_idx,:])
-            self.env.set_R_base_body(body_name=obj_names[obj_idx],R=np.eye(3,3))
+            self.env.set_R_base_body(body_name=obj_names[obj_idx],R=np.eye(3,3)) # np.array([[0, 0, -1], [0, 1, 0], [1, 0, 0]]) if "mug_5" in obj_names[obj_idx] else np.eye(3,3) )
         self.env.forward(increase_tick=False)
 
         # Set the initial pose of the robot
